@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
     CHORD_DEFINITIONS, CHORDS_TONE, FIRST_BLACK_INDEX,
-    AUDIO_FILE_LIST, getNoteFilePrefix, computeAllNotes
+    AUDIO_FILE_LIST, INSTRUMENTS, getNoteFilePrefix, computeAllNotes
 } from '../../src/ts/data';
 
 describe('chord data integrity', () => {
@@ -26,14 +26,30 @@ describe('chord data integrity', () => {
 });
 
 describe('audio file data integrity', () => {
-    it('has 3 files per chord (short, medium, long) = 42 total', () => {
-        expect(AUDIO_FILE_LIST).toHaveLength(42);
+    it('defines the available chord instruments in display order', () => {
+        expect(INSTRUMENTS).toEqual([
+            { id: 'piano_1', display: 'Piano', chordPath: 'piano' },
+            { id: 'guitar', display: 'Guitar', chordPath: 'guitar' },
+            { id: 'guitar-strummed', display: 'Guitar (Strummed)', chordPath: 'guitar-strummed' },
+        ]);
+    });
+
+    it('has piano, guitar, and strummed guitar files for each chord', () => {
+        for (const chord of CHORD_DEFINITIONS) {
+            const pianoMatches = AUDIO_FILE_LIST.filter(f => f.startsWith('piano/') && f.includes(`_${chord.name}_`));
+            const guitarMatches = AUDIO_FILE_LIST.filter(f => f.startsWith('guitar/') && f.includes(`_${chord.name}.`));
+            const strummedMatches = AUDIO_FILE_LIST.filter(f => f.startsWith('guitar-strummed/') && f.includes(`_${chord.name}.`));
+
+            expect(pianoMatches).toHaveLength(3);
+            expect(guitarMatches).toHaveLength(1);
+            expect(strummedMatches).toHaveLength(1);
+        }
     });
 
     it('every chord name appears in exactly 3 audio files', () => {
         for (const chord of CHORD_DEFINITIONS) {
-            const matches = AUDIO_FILE_LIST.filter(f => f.includes(`_${chord.name}_`));
-            expect(matches).toHaveLength(3);
+            const matches = AUDIO_FILE_LIST.filter(f => f.includes(`_${chord.name}_`) || f.includes(`_${chord.name}.`));
+            expect(matches).toHaveLength(5);
         }
     });
 });

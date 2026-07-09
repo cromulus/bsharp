@@ -1,14 +1,20 @@
 import { AudioFileInfo, NoteAudioFileInfo } from './types';
-import { AUDIO_FILE_LIST, NOTE_AUDIO_FILE_LIST, getNoteFilePrefix } from './data';
+import { AUDIO_FILE_LIST, INSTRUMENTS, NOTE_AUDIO_FILE_LIST, getNoteFilePrefix } from './data';
 import { randomElem } from './utils';
 
-let AUDIO_FILES: Map<string, AudioFileInfo[]> | null = null;
+let AUDIO_FILES: Map<string, Map<string, AudioFileInfo[]>> | null = null;
 
-export function getAudioFiles(): Map<string, AudioFileInfo[]> {
+function getInstrumentIdForPath(path: string): string {
+    return INSTRUMENTS.find(instrument => instrument.chordPath === path)?.id || INSTRUMENTS[0].id;
+}
+
+export function getAudioFiles(instrument: string): Map<string, AudioFileInfo[]> {
     if (AUDIO_FILES === null) {
         AUDIO_FILES = new Map();
 
         for (const file of AUDIO_FILE_LIST) {
+            const path = file.split('/')[0];
+            const instrumentId = getInstrumentIdForPath(path);
             const filename = file.split('/').pop()!;
             const [base] = filename.split('.');
             const parts = base.split('_');
@@ -18,19 +24,24 @@ export function getAudioFiles(): Map<string, AudioFileInfo[]> {
 
             const audioFile: AudioFileInfo = {
                 filename: file,
+                instrument: instrumentId,
                 color,
                 chord,
                 ext,
                 elem: null,
             };
 
-            if (!AUDIO_FILES.has(color)) {
-                AUDIO_FILES.set(color, []);
+            if (!AUDIO_FILES.has(instrumentId)) {
+                AUDIO_FILES.set(instrumentId, new Map());
             }
-            AUDIO_FILES.get(color)!.push(audioFile);
+            const instrumentFiles = AUDIO_FILES.get(instrumentId)!;
+            if (!instrumentFiles.has(color)) {
+                instrumentFiles.set(color, []);
+            }
+            instrumentFiles.get(color)!.push(audioFile);
         }
     }
-    return AUDIO_FILES;
+    return AUDIO_FILES.get(instrument) || AUDIO_FILES.get(INSTRUMENTS[0].id)!;
 }
 
 export function audioFileElem(audioFile: AudioFileInfo, onEnded: () => void): HTMLAudioElement {
@@ -48,8 +59,8 @@ export function audioFileElem(audioFile: AudioFileInfo, onEnded: () => void): HT
 
 let _currentTrainerAudio: HTMLAudioElement | null = null;
 
-export function playChordFiles(color: string, onEnded: () => void): void {
-    const audioFiles = getAudioFiles();
+export function playChordFiles(instrument: string, color: string, onEnded: () => void): void {
+    const audioFiles = getAudioFiles(instrument);
     const files = audioFiles.get(color);
     if (files) {
         if (_currentTrainerAudio) {
@@ -63,8 +74,8 @@ export function playChordFiles(color: string, onEnded: () => void): void {
     }
 }
 
-export function preloadAudio(color: string, onEnded: () => void): void {
-    const audioFiles = getAudioFiles().get(color);
+export function preloadAudio(instrument: string, color: string, onEnded: () => void): void {
+    const audioFiles = getAudioFiles(instrument).get(color);
     if (audioFiles) {
         for (const audioFile of audioFiles) {
             audioFileElem(audioFile, onEnded);

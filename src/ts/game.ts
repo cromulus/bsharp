@@ -93,7 +93,7 @@ export function populateAudio(): void {
     selectNewColor();
     stopCurrentAudio();
 
-    const audioFiles = getAudioFiles();
+    const audioFiles = getAudioFiles(getCurrentProfile().current_instrument);
     const files = audioFiles.get(_CORRECT_COLOR!);
     if (files) {
         const newAudioFile = randomElem(files);
@@ -239,21 +239,43 @@ export function changeSelector(to?: string): void {
     saveState();
 
     for (const color of getSelectedColors()) {
-        preloadAudio(color, onAudioEnded);
+        preloadAudio(currentProfile.current_instrument, color, onAudioEnded);
+    }
+}
+
+export function changeInstrumentSelector(to?: string): void {
+    const instrumentSelector = document.getElementById('instrument-selector') as HTMLSelectElement;
+    if (!instrumentSelector) return;
+
+    if (to !== undefined) {
+        instrumentSelector.value = to;
+    }
+
+    const currentProfile = getCurrentProfile();
+    if (currentProfile.current_instrument !== instrumentSelector.value) {
+        stopCurrentAudio();
+        currentProfile.current_instrument = instrumentSelector.value;
+        populateAudio();
+        saveState();
+
+        for (const color of getSelectedColors()) {
+            preloadAudio(currentProfile.current_instrument, color, onAudioEnded);
+        }
     }
 }
 
 export function onTrainerOpen(): void {
     if (!_TRAINER_PRELOADED) {
+        const currentInstrument = getCurrentProfile().current_instrument;
         for (const color of Object.keys(CHORDS_TONE)) {
-            preloadAudio(color, onAudioEnded);
+            preloadAudio(currentInstrument, color, onAudioEnded);
         }
         _TRAINER_PRELOADED = true;
     }
 }
 
 export function playChord(color: string): void {
-    playChordFiles(color, onAudioEnded);
+    playChordFiles(getCurrentProfile().current_instrument, color, onAudioEnded);
 }
 
 export function getEmojiLock(): boolean {

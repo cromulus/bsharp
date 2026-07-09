@@ -5,8 +5,15 @@ export interface ChordDefinition {
     notes: string[];
 }
 
+export interface InstrumentDefinition {
+    id: string;
+    display: string;
+    chordPath: string;
+}
+
 export interface AudioFileInfo {
     filename: string;
+    instrument: string;
     color: string;
     chord: string;
     ext: string;

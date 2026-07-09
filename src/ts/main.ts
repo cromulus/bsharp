@@ -1,7 +1,7 @@
 import { loadState, getCurrentProfile, isRecent, STATE } from './state';
 import {
     playAudio, selectFlagWrapper, nextAudio, resetStats, changeSelector,
-    onTrainerOpen, playChord, getEmojiLock, stopCurrentAudio,
+    changeInstrumentSelector, onTrainerOpen, playChord, getEmojiLock, stopCurrentAudio,
     _CORRECT_COLOR
 } from './game';
 import { initOnboarding } from './onboarding';
@@ -27,6 +27,7 @@ w.play_audio = playAudio;
 w.next_audio = nextAudio;
 w.reset_stats = resetStats;
 w.change_selector = changeSelector;
+w.change_instrument_selector = changeInstrumentSelector;
 w.toggle_expansion_bar = toggleExpansionBar;
 w.toggle_trainer_visibility = toggleTrainerVisibility;
 w.toggle_infobox_visibility = toggleInfoboxVisibility;
@@ -163,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
     populateProfileUiElements();
     setChordDisplayMode(profile.chord_display_mode);
     applyColorScheme(profile.color_scheme);
+    changeInstrumentSelector(profile.current_instrument);
     changeSelector(profile.current_chord);
     installFlagPointerHandling();
     initOnboarding();
