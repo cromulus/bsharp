@@ -77,3 +77,81 @@ test("red option is hidden by default", async ({ page }) => {
   const redOption = page.locator("#chord-selector option[value='red']");
   await expect(redOption).toHaveAttribute("hidden", "");
 });
+
+test("instrument selector appears next to level selector with available instruments", async ({
+  page,
+}) => {
+  await expect(page.locator(".selectors > #chord-selector + #instrument-selector")).toBeVisible();
+
+  const selector = page.locator("#instrument-selector");
+  await expect(selector).toHaveValue("piano_1");
+  await expect(selector.locator("option")).toHaveText([
+    "Piano",
+    "Guitar",
+    "Guitar (Strummed)",
+  ]);
+});
+
+test("selecting an instrument persists it on the current profile", async ({
+  page,
+  context,
+}) => {
+  const selector = page.locator("#instrument-selector");
+  await selector.selectOption("guitar-strummed");
+
+  await expect(selector).toHaveValue("guitar-strummed");
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const state = JSON.parse(localStorage.getItem("bsharp_state")!);
+        return state.profiles[state.current_profile].current_instrument;
+      }),
+    )
+    .toBe("guitar-strummed");
+
+  const secondPage = await context.newPage();
+  await secondPage.goto("/");
+  await expect(secondPage.locator("#instrument-selector")).toHaveValue("guitar-strummed");
+  await secondPage.close();
+});
+
+test("selected instrument controls chord audio source", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "__bsharp_loaded_audio_srcs", {
+      value: [],
+      writable: true,
+    });
+    const originalLoad = HTMLMediaElement.prototype.load;
+    HTMLMediaElement.prototype.load = function () {
+      (window as unknown as { __bsharp_loaded_audio_srcs: string[] }).__bsharp_loaded_audio_srcs.push(this.src);
+      return originalLoad.call(this);
+    };
+    (window as unknown as { __bsharp_test_deterministic_color: string }).__bsharp_test_deterministic_color =
+      "yellow";
+  });
+  await page.goto("/");
+
+  await page.locator("#instrument-selector").selectOption("guitar");
+
+  await expect
+    .poll(async () =>
+      page.evaluate(
+        () =>
+          (window as unknown as { __bsharp_loaded_audio_srcs: string[] }).__bsharp_loaded_audio_srcs,
+      ),
+    )
+    .toContainEqual(expect.stringContaining("/static/chords/guitar/c4f4a4_yellow.mp3"));
+
+  await page.locator("#instrument-selector").selectOption("guitar-strummed");
+
+  await expect
+    .poll(async () =>
+      page.evaluate(
+        () =>
+          (window as unknown as { __bsharp_loaded_audio_srcs: string[] }).__bsharp_loaded_audio_srcs,
+      ),
+    )
+    .toContainEqual(
+      expect.stringContaining("/static/chords/guitar-strummed/c4f4a4_yellow.mp3"),
+    );
+});

@@ -6,7 +6,7 @@ import {
     DEFAULT_SHOW_CHORD_MODE, DEFAULT_REVEAL_CHORD_MODE, DEFAULT_CHORD_DISPLAY_MODE,
     DEFAULT_SINGLE_NOTE_MODE, DEFAULT_SINGLE_NOTE_CORRECTNESS_MODE,
     DEFAULT_PERSIST_REACTION_FACE, DEFAULT_ENABLE_ONBOARDING_HINTS, DEFAULT_COLOR_SCHEME,
-    DEFAULT_CHORD_SELECTION_MODE,
+    DEFAULT_CHORD_SELECTION_MODE, DEFAULT_INSTRUMENT,
 } from './state';
 import {
     calculatePercentage, calculateNeutralLevel, getCatEmoji, normalizeStatsObject
@@ -673,6 +673,14 @@ export function setCurrentProfile(profile: Profile): void {
 
     if (profile.current_chord === undefined) {
         profile.current_chord = Object.keys(CHORDS_TONE)[1];
+    }
+    if (profile.current_instrument === undefined) {
+        profile.current_instrument = DEFAULT_INSTRUMENT;
+    }
+
+    const instrumentSelector = document.getElementById('instrument-selector') as HTMLSelectElement | null;
+    if (instrumentSelector) {
+        instrumentSelector.value = profile.current_instrument;
     }
 
     normalizeStatsObject(profile.stats);

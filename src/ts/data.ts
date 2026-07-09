@@ -1,4 +1,4 @@
-import { ChordDefinition, NoteInfo } from './types';
+import { ChordDefinition, InstrumentDefinition, NoteInfo } from './types';
 
 export const CHORD_DEFINITIONS: ChordDefinition[] = [
     { name: "red", display: "Red", chord: "C", notes: ["C4", "E4", "G4"] },
@@ -22,6 +22,12 @@ export const CHORDS_TONE: Record<string, string[]> = Object.fromEntries(
 );
 
 export const FIRST_BLACK_INDEX = 9;
+
+export const INSTRUMENTS: InstrumentDefinition[] = [
+    { id: 'piano_1', display: 'Piano', chordPath: 'piano' },
+    { id: 'guitar', display: 'Guitar', chordPath: 'guitar' },
+    { id: 'guitar-strummed', display: 'Guitar (Strummed)', chordPath: 'guitar-strummed' },
+];
 
 export const AUDIO_FILE_LIST: string[] = [
     "piano/acf_black_long.mp3",
@@ -66,6 +72,34 @@ export const AUDIO_FILE_LIST: string[] = [
     "piano/hdg_blue_long.mp3",
     "piano/hdg_blue_medium.mp3",
     "piano/hdg_blue_short.mp3",
+    "guitar/a3c4f4_black.mp3",
+    "guitar/a3cs4e4_gray.mp3",
+    "guitar/as3d4f4_lightpurple.mp3",
+    "guitar/c4e4g4_red.mp3",
+    "guitar/c4f4a4_yellow.mp3",
+    "guitar/d4fs4a4_tan.mp3",
+    "guitar/d4g4h4_green.mp3",
+    "guitar/ds4g4as4_skyblue.mp3",
+    "guitar/e4g4c5_orange.mp3",
+    "guitar/e4gs4h4_lightgreen.mp3",
+    "guitar/f4a4c5_purple.mp3",
+    "guitar/g4c5e5_brown.mp3",
+    "guitar/g4h4d5_pink.mp3",
+    "guitar/h3d4g4_blue.mp3",
+    "guitar-strummed/a3c4f4_black.mp3",
+    "guitar-strummed/a3cs4e4_gray.mp3",
+    "guitar-strummed/as3d4f4_lightpurple.mp3",
+    "guitar-strummed/c4e4g4_red.mp3",
+    "guitar-strummed/c4f4a4_yellow.mp3",
+    "guitar-strummed/d4fs4a4_tan.mp3",
+    "guitar-strummed/d4g4h4_green.mp3",
+    "guitar-strummed/ds4g4as4_skyblue.mp3",
+    "guitar-strummed/e4g4c5_orange.mp3",
+    "guitar-strummed/e4gs4h4_lightgreen.mp3",
+    "guitar-strummed/f4a4c5_purple.mp3",
+    "guitar-strummed/g4c5e5_brown.mp3",
+    "guitar-strummed/g4h4d5_pink.mp3",
+    "guitar-strummed/h3d4g4_blue.mp3",
 ];
 
 export const NOTE_AUDIO_FILE_LIST: string[] = [

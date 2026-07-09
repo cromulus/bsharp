@@ -406,15 +406,26 @@ div.stats i.fa {
 div.selectors {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
     margin-top: 2rem;
     margin-bottom: 1rem;
-    max-height: 5vh; // Fallback
-    max-height: 5dvh;
 }
 
 div.selectors select.selector {
-    margin-left: 2em;
-    margin-right: 2em;
+    margin-left: 0;
+    margin-right: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+div.selectors #chord-selector {
+    width: 24ch;
+}
+
+div.selectors #instrument-selector {
+    width: 12ch;
 }
 
 body.colorscheme-light div.stats.done.perfect span#stats-divider,

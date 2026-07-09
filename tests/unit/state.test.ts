@@ -9,7 +9,7 @@ vi.stubGlobal('localStorage', {
     clear: () => { for (const k in store) delete store[k]; },
 });
 
-import { initializeProfileDefaults } from '../../src/ts/state';
+import { DEFAULT_INSTRUMENT, initializeProfileDefaults } from '../../src/ts/state';
 import type { Profile } from '../../src/ts/types';
 
 describe('initializeProfileDefaults', () => {
@@ -20,6 +20,7 @@ describe('initializeProfileDefaults', () => {
         expect(partial.reveal_chord_mode).toBe('always');
         expect(partial.chord_display_mode).toBe('shapes_and_letters');
         expect(partial.persist_reaction_face).toBe(true);
+        expect(partial.current_instrument).toBe(DEFAULT_INSTRUMENT);
     });
 
     it('does not overwrite existing values', () => {
@@ -29,5 +30,14 @@ describe('initializeProfileDefaults', () => {
         } as unknown as Profile;
         initializeProfileDefaults(profile);
         expect(profile.show_chord_mode).toBe('always');
+    });
+
+    it('does not overwrite an existing current instrument', () => {
+        const profile = {
+            name: 'Test', icon: 'fa-user', id: 1,
+            current_instrument: 'guitar',
+        } as unknown as Profile;
+        initializeProfileDefaults(profile);
+        expect(profile.current_instrument).toBe('guitar');
     });
 });

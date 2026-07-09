@@ -109,6 +109,7 @@ export function initializeProfileDefaults(profile: Profile): void {
         enable_onboarding_hints: DEFAULT_ENABLE_ONBOARDING_HINTS,
         color_scheme: DEFAULT_COLOR_SCHEME,
         chord_selection_mode: DEFAULT_CHORD_SELECTION_MODE,
+        current_instrument: DEFAULT_INSTRUMENT,
     };
 
     for (const [key, defaultVal] of Object.entries(defaults)) {

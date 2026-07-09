@@ -104,6 +104,33 @@ test("switching profiles applies that profile chord level", async ({
   await expect(page.locator("#chord-selector")).toHaveValue("blue");
 });
 
+test("switching profiles applies that profile instrument", async ({ page }) => {
+  page.on("dialog", (dialog) => dialog.dismiss());
+
+  await openProfilePanel(page);
+  await page.locator("#profile-switcher .switcher-add").click();
+  await page.locator("#profile_name_setting").fill("Guitar User");
+  await page
+    .locator("input[name='profile_icon_selector'][value='fa-trophy']")
+    .check();
+  await page.locator("#add-user-button").click();
+
+  await page.locator("#instrument-selector").selectOption("guitar");
+
+  await openProfilePanel(page);
+  await page
+    .locator("#profile-switcher .switcher-profile:has(.fa-user)")
+    .click();
+
+  await expect(page.locator("#instrument-selector")).toHaveValue("piano_1");
+
+  await page
+    .locator("#profile-switcher .switcher-profile:has(.fa-trophy)")
+    .click();
+
+  await expect(page.locator("#instrument-selector")).toHaveValue("guitar");
+});
+
 test("target number persists after save", async ({ page }) => {
   page.on("dialog", (dialog) => dialog.dismiss());
 
