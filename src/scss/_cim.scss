@@ -415,6 +415,17 @@ div.selectors {
 div.selectors select.selector {
     margin-left: 0;
     margin-right: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+div.selectors #chord-selector {
+    width: 24ch;
+}
+
+div.selectors #instrument-selector {
+    width: 12ch;
 }
 
 body.colorscheme-light div.stats.done.perfect span#stats-divider,
