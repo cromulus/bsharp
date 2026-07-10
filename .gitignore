@@ -8,3 +8,5 @@ icon-drafts/
 tmp/
 sample-source/**/raw/
 **/prompt.md
+AGENTS.md
+CLAUDE.md

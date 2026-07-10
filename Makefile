@@ -1,4 +1,4 @@
-.PHONY: build check clean test test-unit test-ui test-integration test-screenshot test-screenshot-update test-android-touch android-deploy android-release icons generate-audio move-downloaded-chords move-downloaded-notes convert-audio-to-mp3 play-store-screenshots
+.PHONY: build check clean test test-unit test-ui test-integration test-screenshot test-screenshot-update test-android-touch android-deploy android-release icons generate-audio move-downloaded-chords move-downloaded-notes convert-audio-to-mp3 play-store-screenshots agents-setup
 
 build: dist/bsharp.js dist/style.css dist/index.html dist/static
 
@@ -56,6 +56,10 @@ play-store-screenshots: build
 	npx http-server dist -p 8080 -c-1 --silent & echo $$! > .http-server.pid
 	sleep 1
 	npx tsx scripts/play-store-screenshots.ts; kill $$(cat .http-server.pid); rm -f .http-server.pid
+
+agents-setup:
+	ln -sfn dev/AGENTS_MASTER.md AGENTS.md
+	ln -sfn dev/AGENTS_MASTER.md CLAUDE.md
 
 clean:
 	rm -rf dist/*

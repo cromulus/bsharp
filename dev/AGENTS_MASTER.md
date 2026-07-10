@@ -92,17 +92,12 @@ Tests exist to protect behavior, not to increase coverage or test count. Follow 
 
 ## Releases
 
-When bumping the version for a release:
-1. Tag the commit: `git tag v<version>` (e.g. `git tag v1.2`)
-2. Build the AAB: `make android-release`
-3. Generate release notes from commits since the last tag: `git log --oneline <prev-tag>..HEAD`
-4. Keep release notes short (max 500 chars / ~5 lines) for Play Store's "What's new" field
-5. Release notes go in CHANGELOG.md — append a new section at the top with the version, date, and notes
+See [`dev/RELEASE.md`](RELEASE.md) for release instructions.
 
 ## TODO
 
-- Pending items are tracked in TODO.md. Read these at the beginning of a session. Update the TODO.md (delete any finished items, add any new pending items) before commits if relevant. 
+- Pending items are tracked in `dev/TODO.md`. Read these at the beginning of a session. Update `dev/TODO.md` (delete any finished items, add any new pending items) before commits if relevant.
 
 ## Attribution
 
-Licensed Apache 2.0. Original work by Paul Ganssle. See NOTICE file.
+Licensed Apache 2.0. Original work by Paul Ganssle. See [NOTICE](../NOTICE).

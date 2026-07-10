@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4 - 2026-07-10
+
+- Add Guitar and Guitar (Strummed) as available instruments
+
 ## v1.3 — 2026-03-01
 
 - Fix broken link to Eguchi method research paper in info panel
