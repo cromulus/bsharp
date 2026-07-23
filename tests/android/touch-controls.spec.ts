@@ -159,12 +159,11 @@ test("Android system bars do not block the bottom play control", async () => {
   try {
     const page = await launchFreshApp(device);
     await expect(page.locator("#play-button")).not.toHaveClass(/deactivated/);
+    await expect(page.locator("#onboarding-overlay")).toBeVisible();
 
     await tapLocatorCenter(device, page, "#play-button");
 
-    await expect.poll(async () => page.evaluate(() =>
-      Array.from(document.querySelectorAll("audio")).some((audio) => !audio.paused),
-    )).toBe(true);
+    await expect(page.locator("#onboarding-overlay")).not.toBeVisible();
   } finally {
     await device.close();
   }
