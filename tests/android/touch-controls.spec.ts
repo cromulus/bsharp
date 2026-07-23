@@ -41,7 +41,8 @@ async function launchFreshApp(device: AndroidDevice): Promise<Page> {
     );
   }
 
-  const webview = await device.webView({ pkg: APP_PACKAGE }, { timeout: 15_000 });
+  const webview = device.webViews().find((candidate) => candidate.pkg() === APP_PACKAGE)
+    ?? await device.webView({ pkg: APP_PACKAGE }, { timeout: 30_000 });
   const page = await webview.page();
   await page.waitForLoadState("domcontentloaded");
   await expect(page.locator("#play-button")).toBeVisible();
@@ -110,12 +111,21 @@ async function locatorPointOnDevice(
   };
 }
 
+async function tapLocatorCenter(
+  device: AndroidDevice,
+  page: Page,
+  selector: string,
+): Promise<void> {
+  const point = await locatorPointOnDevice(device, page, selector, 0.5, 0.5);
+  await device.input.tap(point);
+}
+
 async function startRound(page: Page): Promise<void> {
   await page.locator("#play-button").click();
   await page.waitForTimeout(1_000);
 }
 
-test("Android large drag inside same flag counts as answer", async () => {
+test("Android flag drag inside the same flag counts as an answer", async () => {
   const device = await connectDevice();
   try {
     const page = await launchFreshApp(device);
@@ -139,6 +149,21 @@ test("Android large drag inside same flag counts as answer", async () => {
     await device.input.drag(start, end, 16);
 
     await expect(page.locator("#stats-total")).toHaveText("1");
+  } finally {
+    await device.close();
+  }
+});
+
+test("Android system bars do not block the bottom play control", async () => {
+  const device = await connectDevice();
+  try {
+    const page = await launchFreshApp(device);
+    await expect(page.locator("#play-button")).not.toHaveClass(/deactivated/);
+    await expect(page.locator("#onboarding-overlay")).toBeVisible();
+
+    await tapLocatorCenter(device, page, "#play-button");
+
+    await expect(page.locator("#onboarding-overlay")).not.toBeVisible();
   } finally {
     await device.close();
   }

@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.5 - 2026-07-23
+
+- Update Android compatibility for current Android versions
+- Improve system-bar display and reduce release app size
+
 ## v1.4 - 2026-07-10
 
 - Add Guitar and Guitar (Strummed) as available instruments
