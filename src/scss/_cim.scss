@@ -348,6 +348,45 @@ body.colorscheme-light div.controls i.fa {
     color: #0077be;
 }
 
+body.colorscheme-dark div.controls i.fa-arrow-right {
+    --next-arrow-fill-color: #{color.scale(#abd1f2, $lightness: 35%)};
+}
+
+body.colorscheme-light div.controls i.fa-arrow-right {
+    --next-arrow-fill-color: #{color.scale(#0077be, $lightness: 35%)};
+}
+
+div.controls a#next-chord > i.fa-arrow-right {
+    position: relative;
+}
+
+div.controls a#next-chord > i.fa-arrow-right::after {
+    content: "\f061";
+    position: absolute;
+    inset: 0;
+    color: var(--next-arrow-fill-color);
+    clip-path: inset(0 100% 0 0);
+    pointer-events: none;
+}
+
+@keyframes next-arrow-fill {
+    from {
+        clip-path: inset(0 100% 0 0);
+    }
+
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+div.controls a#next-chord > i.fa-arrow-right.next-arrow-fill::after {
+    animation: next-arrow-fill var(--next-arrow-fill-duration) linear forwards;
+}
+
+div.controls a#next-chord.deactivated > i.fa-arrow-right::after {
+    display: none;
+}
+
 div.controls a.deactivated i.fa {
     color: #0077be50;
 }
