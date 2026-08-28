@@ -17,6 +17,7 @@ import {
     showScreenPinningInfo, closeScreenPinningModal,
 } from './ui';
 import { cleanSessionHistory } from './session_cleanup';
+import { startNextArrowFill, resetNextArrowFill } from './nextArrowAnimation';
 
 // Register callbacks to break circular dependency between ui.ts and game.ts
 registerGameCallbacks(getEmojiLock, resetStats, changeSelector, onTrainerOpen);
@@ -46,6 +47,8 @@ w.play_chord = playChord;
 w.show_screen_pinning_info = showScreenPinningInfo;
 w.close_screen_pinning_modal = closeScreenPinningModal;
 w.__bsharp_correct_color = () => _CORRECT_COLOR;
+w.__bsharp_start_next_arrow_fill = startNextArrowFill;
+w.__bsharp_reset_next_arrow_fill = resetNextArrowFill;
 
 const FLAG_BOUNDARY_SLOP_PX = 10;
 
