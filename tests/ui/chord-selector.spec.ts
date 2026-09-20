@@ -132,6 +132,7 @@ test("selected instrument controls chord audio source", async ({ page }) => {
   await page.goto("/");
 
   await page.locator("#instrument-selector").selectOption("guitar");
+  await page.locator("#play-button").click();
 
   await expect
     .poll(async () =>
@@ -143,6 +144,7 @@ test("selected instrument controls chord audio source", async ({ page }) => {
     .toContainEqual(expect.stringContaining("/static/chords/guitar/c4f4a4_yellow.mp3"));
 
   await page.locator("#instrument-selector").selectOption("guitar-strummed");
+  await page.locator("#play-button").click();
 
   await expect
     .poll(async () =>

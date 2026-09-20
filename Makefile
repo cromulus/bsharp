@@ -1,6 +1,7 @@
 .PHONY: build check clean test test-unit test-ui test-integration test-screenshot test-screenshot-update test-android-touch android-deploy android-release icons generate-audio move-downloaded-chords move-downloaded-notes convert-audio-to-mp3 play-store-screenshots agents-setup
 
 build: dist/bsharp.js dist/style.css dist/index.html dist/static
+	node scripts/build-pwa.mjs
 
 dist/bsharp.js: src/ts/*.ts
 	npx esbuild src/ts/main.ts --bundle --outfile=dist/bsharp.js --format=iife --target=es2020
@@ -9,10 +10,12 @@ dist/style.css: src/scss/*.scss
 	npx sass src/scss/style.scss dist/style.css --no-source-map
 
 dist/index.html: src/index.html
+	mkdir -p dist
 	cp src/index.html dist/index.html
 
-dist/static: static
-	cp -r static dist/
+dist/static: FORCE
+	mkdir -p dist
+	cp -R static/. dist/static/
 
 check:
 	npx tsc --noEmit
@@ -112,3 +115,6 @@ convert-audio-to-mp3:
 			echo "Converted $$dir WAVs to MP3"; \
 		fi; \
 	done
+
+.PHONY: FORCE
+FORCE:

@@ -80,3 +80,54 @@ Then open `android/` in Android Studio, sync Gradle, and run on a device or emul
 ## Attribution
 
 Derived from [pganssle/cim](https://github.com/pganssle/cim) by Paul Ganssle. Rebuilt as a separate tool with a distinct name at his [request](https://github.com/pganssle/cim/pull/62#issuecomment-4017584766). Licensed under the Apache License 2.0. See [NOTICE](NOTICE) for details.
+
+## iPhone, iPad and offline installation
+
+Serve `dist/` over **HTTPS**. On iPhone/iPad, open it in Safari, use **Share → Add
+to Home Screen**, and enable **Open as Web App** if offered. The Profile panel
+shows download status; wait for **Ready for offline practice** before disconnecting.
+The app caches every piano/guitar recording, font and app file (roughly 7 MB).
+Tap Play to start audio; returning from the background requires another tap.
+
+Updates download in the background. When an update is ready, close all BSharp
+windows, including the Home Screen app, and reopen. No update reloads an active
+practice session. Browsers can still evict stored data; offline readiness is not
+a permanent storage guarantee.
+
+Progress stays on the device. Safari and a Home Screen installation can have
+separate storage. Use **Export progress** and **Import a BSharp or CIM backup**
+in the Profile panel to move progress or keep backups. Imports show a preview
+and add new profiles, retaining existing ones. CIM instruments unavailable in
+BSharp use piano; single-note history is retained, but single-note gameplay is
+not enabled. No account, cloud sync, or SQLite database is required.
+
+## Self-hosting with Docker
+
+```bash
+docker compose up -d --build
+```
+
+The app listens at `http://127.0.0.1:8080`. Put your existing HTTPS reverse proxy
+in front of that address. For a proxy in another container, connect it to the
+same Docker network and use `bsharp:80`. Plain HTTP on a LAN IP does **not** enable
+service workers on iOS; localhost is only an exception on the device itself.
+The container serves static files and holds no user data, so no database volume
+is needed. Keep the same hostname/path to retain access to device-local progress.
+
+For a static host, run `npm ci && make build` and publish all of `dist/`. Preserve
+relative paths and the trailing slash when serving beneath a subdirectory.
+Serve `sw.js` and HTML with revalidation (`Cache-Control: no-cache`).
+
+## Browser checks
+
+```bash
+npx playwright install chromium webkit
+make check test
+```
+
+The UI suite covers Chromium mobile emulation and WebKit with an iPhone viewport,
+including playback rejection, backup import, and cold launches after shutting
+down the origin server. Desktop WebKit is not a physical iPhone: also verify
+Home Screen installation, audible sound, lock/unlock, phone interruptions,
+portrait/landscape and airplane-mode relaunch on a real device before release.
+See [the CIM comparison](dev/UPSTREAM_REVIEW.md) for the integration decisions.

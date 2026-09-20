@@ -7,7 +7,7 @@ import {
     newStats, isRecent
 } from './state';
 import { getCurrentCoefficients, updateStartTimeIfNeeded, updateStats, normalizeStatsObject } from './stats';
-import { getAudioFiles, audioFileElem, playChordFiles, preloadAudio } from './audio';
+import { getAudioFiles, audioFileElem, playChordFiles, playMedia, stopPlayback } from './audio';
 import { populateFlags, updateStatsDisplay, resetCatEmoji, setCatEmoji, setChordDisplayMode, populateProfileUiElements } from './ui';
 import { dismissOnboardingStep, showOnboardingGuessPrompt, showOnboardingGoNextPrompt, showOnboardingPlayPrompt } from './onboarding';
 
@@ -16,11 +16,10 @@ let _CHORDS_ON = false;
 export let _CORRECT_COLOR: string | null = null;
 let _SELECTED_ELEM: HTMLElement | null = null;
 let _CORRECT_ELEM: HTMLElement | null = null;
-let _CURRENT_AUDIO: [HTMLAudioElement, number] | null = null;
+let _CURRENT_AUDIO: AudioFileInfo | null = null;
 let _AUDIO_PLAYED = false;
 let _EMOJI_LOCK = false;
 let _CURRENT_COEFFICIENTS: number[] | null = null;
-let _TRAINER_PRELOADED = false;
 let _PERSIST_REACTION_FACE_ENABLED = false;
 export function getTestDeterministicColor(): string | null {
     return (window as unknown as Record<string, unknown>).__bsharp_test_deterministic_color as string | null ?? null;
@@ -45,21 +44,13 @@ export function chordsOn(): boolean {
     return _CHORDS_ON;
 }
 
-function setPlayedAfter(delay: number): void {
-    setTimeout(() => { _AUDIO_PLAYED = true; }, delay);
-}
-
 function onAudioEnded(): void {
     _AUDIO_PLAYED = true;
     showOnboardingGuessPrompt();
 }
 
 export function stopCurrentAudio(): void {
-    if (_CURRENT_AUDIO) {
-        const [chord] = _CURRENT_AUDIO;
-        chord.pause();
-        chord.currentTime = 0;
-    }
+    stopPlayback();
 }
 
 
@@ -97,8 +88,7 @@ export function populateAudio(): void {
     const files = audioFiles.get(_CORRECT_COLOR!);
     if (files) {
         const newAudioFile = randomElem(files);
-        const afElem = audioFileElem(newAudioFile, onAudioEnded);
-        _CURRENT_AUDIO = [afElem, afElem.duration];
+        _CURRENT_AUDIO = newAudioFile;
     }
 
     const playButton = document.getElementById('play-button');
@@ -112,11 +102,9 @@ export function playAudio(): void {
     if (!_CURRENT_AUDIO) return;
 
     dismissOnboardingStep('play');
-    const [chord, duration] = _CURRENT_AUDIO;
-    stopCurrentAudio();
-    const safeDuration = isNaN(duration) ? 0.8 : duration;
-    setPlayedAfter(safeDuration * 0.8);
-    chord.play();
+    _AUDIO_PLAYED = false;
+    const chord = audioFileElem(_CURRENT_AUDIO, onAudioEnded);
+    playMedia(chord, () => { _AUDIO_PLAYED = true; });
 }
 
 export function selectFlagWrapper(wrapperElem: HTMLElement): void {
@@ -238,9 +226,6 @@ export function changeSelector(to?: string): void {
     showOnboardingPlayPrompt();
     saveState();
 
-    for (const color of getSelectedColors()) {
-        preloadAudio(currentProfile.current_instrument, color, onAudioEnded);
-    }
 }
 
 export function changeInstrumentSelector(to?: string): void {
@@ -258,24 +243,11 @@ export function changeInstrumentSelector(to?: string): void {
         populateAudio();
         saveState();
 
-        for (const color of getSelectedColors()) {
-            preloadAudio(currentProfile.current_instrument, color, onAudioEnded);
-        }
-    }
-}
-
-export function onTrainerOpen(): void {
-    if (!_TRAINER_PRELOADED) {
-        const currentInstrument = getCurrentProfile().current_instrument;
-        for (const color of Object.keys(CHORDS_TONE)) {
-            preloadAudio(currentInstrument, color, onAudioEnded);
-        }
-        _TRAINER_PRELOADED = true;
     }
 }
 
 export function playChord(color: string): void {
-    playChordFiles(getCurrentProfile().current_instrument, color, onAudioEnded);
+    playChordFiles(getCurrentProfile().current_instrument, color, () => {});
 }
 
 export function getEmojiLock(): boolean {

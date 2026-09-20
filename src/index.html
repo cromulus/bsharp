@@ -1,37 +1,23 @@
 <!doctype html>
-<html>
+<html lang="en">
     <head>
         <title>BSharp: Perfect Pitch Trainer</title>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport"
-              content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+              content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <meta http-equiv="Content-Language" content="en">
+        <link rel="manifest" href="manifest.webmanifest">
+        <link rel="apple-touch-icon" href="static/icons/apple-touch-icon.png">
+        <meta name="theme-color" content="#7b1fa2">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="BSharp">
         <meta name="color-scheme" content="light dark">
         <meta name="description" content="Perfect pitch trainer using Eguchi's Chord Identification Method. Practice identifying chords by color for children aged 2-6.">
         <link rel="preload" href="static/fonts/forkawesome-webfont.woff2?v=1.2.0"
                             as="font" type="font/woff2" crossorigin="">
         <link rel="stylesheet" href="style.css">
         <style>
-            /* Android-specific overrides (always applied) */
-            html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            div.cim-container {
-                padding: 40px 10px 10px 10px !important;
-                box-sizing: border-box !important;
-            }
-
-            div.hamburger {
-                margin-top: 60px !important;
-            }
-
-            div.menu-container.visible div.hamburger {
-                margin-top: 10px !important;
-            }
-
             div.profile-info-container .entry-row {
                 margin-bottom: 15px;
                 display: flex;
@@ -48,6 +34,8 @@
     </head>
 
     <body class="colorscheme-dark">
+    <div id="storage-status" role="status" aria-live="polite"></div>
+    <div id="audio-status" role="status" aria-live="polite"></div>
     <div class="cim-container">
         <div class="menu-container" id="menu-container">
             <div class="menu-spacer"></div>
@@ -136,6 +124,18 @@
 
             <!-- "Add profile" / "Profile settings" dialog -->
             <div class="profile-info-container panel" id="profile-info-container">
+                <section class="pwa-settings">
+                    <p id="offline-status" role="status">Online practice</p>
+                    <details><summary>Installation &amp; backups</summary>
+                    <p id="install-help">On iPhone or iPad: open in Safari, tap Share, then Add to Home Screen. Choose Open as Web App if offered.</p>
+                    <p>Progress is saved on this device. Safari and the Home Screen app may have separate progress.</p>
+                    <button class="button settings-button" type="button" onclick="download_state()">Export progress</button>
+                    <label for="import-progress">Import a BSharp or CIM backup</label>
+                    <input id="import-progress" type="file" accept=".json,application/json">
+                    <p id="import-status" role="status"></p>
+                    <button id="apply-import" class="button settings-button" type="button" hidden>Add imported profiles</button>
+                    </details>
+                </section>
                 <div id="profile-switcher"></div>
                 <div class="entry-row">
                     <label for="profile_name">Profile Name:</label>
@@ -524,7 +524,8 @@
 </div>
         <div class="modal-overlay" id="screen-pinning-modal">
         <div class="modal-content">
-            <p><strong>Screen Pinning</strong> locks the app on screen so children can't navigate away.</p>
+            <p><strong>iPhone / iPad:</strong> Enable Guided Access in Settings &gt; Accessibility. Open BSharp, then triple-click the side or Home button to start Guided Access.</p>
+            <p><strong>Android Screen Pinning</strong> locks the app on screen so children can't navigate away.</p>
             <p><strong>Enable it:</strong></p>
             <ol>
                 <li>Open <strong>Settings &gt; Security &gt; More security settings &gt; App Pinning</strong> (on Samsung: Security &gt; Other security settings &gt; Pin Windows)</li>

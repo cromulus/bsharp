@@ -27,13 +27,27 @@ export const DEFAULT_CHORD_SELECTION_MODE = 'random';
 export let STATE: AppState = null!;
 export let _SESSION_HISTORY: Record<string, Record<string, SessionStats[]>> | null = null;
 
+const unreadableKeys = new Set<string>();
+function storageWarning(): void {
+    const status = typeof document !== 'undefined' ? document.getElementById('storage-status') : null;
+    if (status) status.textContent = 'Progress is not being saved reliably on this device. Export progress before closing; check available storage.';
+}
 function getObject<T>(key: string): T | null {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) as T : null;
+    try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) as T : null;
+    } catch {
+        // Keep malformed data untouched so it can still be recovered.
+        unreadableKeys.add(key);
+        storageWarning();
+        return null;
+    }
 }
 
-function setObject(key: string, value: unknown): void {
-    localStorage.setItem(key, JSON.stringify(value));
+export function setObject(key: string, value: unknown): void {
+    if (unreadableKeys.has(key)) { storageWarning(); return; }
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch { storageWarning(); }
 }
 
 export function newTally(): Tally {

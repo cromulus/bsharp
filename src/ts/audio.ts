@@ -44,43 +44,55 @@ export function getAudioFiles(instrument: string): Map<string, AudioFileInfo[]> 
     return AUDIO_FILES.get(instrument) || AUDIO_FILES.get(INSTRUMENTS[0].id)!;
 }
 
-export function audioFileElem(audioFile: AudioFileInfo, onEnded: () => void): HTMLAudioElement {
-    if (audioFile.elem === null) {
-        audioFile.elem = document.createElement('audio');
-        audioFile.elem.classList.add('chord');
-        audioFile.elem.controls = true;
-        audioFile.elem.preload = 'auto';
-        audioFile.elem.src = 'static/chords/' + audioFile.filename;
-        audioFile.elem.onended = onEnded;
-        audioFile.elem.load();
+// One media element retains Safari's user-gesture authorization across sounds.
+let player: HTMLAudioElement | null = null;
+let playbackId = 0;
+export function stopPlayback(): void {
+    playbackId++;
+    if (player) {
+        player.pause();
+        player.currentTime = 0;
     }
-    return audioFile.elem;
 }
 
-let _currentTrainerAudio: HTMLAudioElement | null = null;
+function prepareAudio(src: string, onEnded: () => void): HTMLAudioElement {
+    if (!player) {
+        player = document.createElement('audio');
+        player.preload = 'auto';
+        player.setAttribute('playsinline', '');
+    }
+    if (player.getAttribute('src') !== src) {
+        stopPlayback();
+        player.src = src;
+        player.load();
+    }
+    player.onended = onEnded;
+    return player;
+}
+
+export function audioFileElem(audioFile: AudioFileInfo, onEnded: () => void): HTMLAudioElement {
+    return prepareAudio('static/chords/' + audioFile.filename, onEnded);
+}
+
+export function playMedia(elem: HTMLAudioElement, onStarted: () => void = () => {}): void {
+    stopPlayback();
+    const id = playbackId;
+    const status = document.getElementById('audio-status');
+    if (status) status.textContent = '';
+    // A failed media request stays failed until load() resets the element.
+    if (elem.error) elem.load();
+    // Keep play() synchronous with the tap. Never wait for loading/network first.
+    void elem.play().then(() => {
+        if (id === playbackId) onStarted();
+    }).catch(error => {
+        if (id !== playbackId || error.name === 'AbortError') return;
+        if (status) status.textContent = 'Audio could not start. Tap Play to retry; check your volume and connection.';
+    });
+}
 
 export function playChordFiles(instrument: string, color: string, onEnded: () => void): void {
-    const audioFiles = getAudioFiles(instrument);
-    const files = audioFiles.get(color);
-    if (files) {
-        if (_currentTrainerAudio) {
-            _currentTrainerAudio.pause();
-            _currentTrainerAudio.currentTime = 0;
-        }
-        const audioFile = randomElem(files);
-        const elem = audioFileElem(audioFile, onEnded);
-        _currentTrainerAudio = elem;
-        elem.play();
-    }
-}
-
-export function preloadAudio(instrument: string, color: string, onEnded: () => void): void {
-    const audioFiles = getAudioFiles(instrument).get(color);
-    if (audioFiles) {
-        for (const audioFile of audioFiles) {
-            audioFileElem(audioFile, onEnded);
-        }
-    }
+    const files = getAudioFiles(instrument).get(color);
+    if (files) playMedia(audioFileElem(randomElem(files), onEnded));
 }
 
 // --- Single note audio ---
@@ -115,14 +127,7 @@ export function getNoteAudioFiles(): Map<string, NoteAudioFileInfo[]> {
 }
 
 export function noteAudioFileElem(noteFile: NoteAudioFileInfo, onEnded: () => void): HTMLAudioElement {
-    if (noteFile.elem === null) {
-        noteFile.elem = document.createElement('audio');
-        noteFile.elem.classList.add('note');
-        noteFile.elem.controls = true;
-        noteFile.elem.src = 'static/notes/' + noteFile.filename;
-        noteFile.elem.onended = onEnded;
-    }
-    return noteFile.elem;
+    return prepareAudio('static/notes/' + noteFile.filename, onEnded);
 }
 
 export function playNoteFile(note: string, onEnded: () => void): void {
@@ -130,6 +135,6 @@ export function playNoteFile(note: string, onEnded: () => void): void {
     const noteFiles = getNoteAudioFiles().get(prefix);
     if (noteFiles) {
         const noteFile = randomElem(noteFiles);
-        noteAudioFileElem(noteFile, onEnded).play();
+        playMedia(noteAudioFileElem(noteFile, onEnded));
     }
 }

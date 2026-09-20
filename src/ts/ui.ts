@@ -24,18 +24,15 @@ let _EASTER_EGG_ENABLED = false;
 let _getEmojiLock: () => boolean = () => false;
 let _resetStatsFn: (done?: boolean) => void = () => {};
 let _changeSelectorFn: (to?: string) => void = () => {};
-let _onTrainerOpenFn: () => void = () => {};
 
 export function registerGameCallbacks(
     getEmojiLock: () => boolean,
     resetStats: (done?: boolean) => void,
     changeSelector: (to?: string) => void,
-    onTrainerOpen: () => void,
 ): void {
     _getEmojiLock = getEmojiLock;
     _resetStatsFn = resetStats;
     _changeSelectorFn = changeSelector;
-    _onTrainerOpenFn = onTrainerOpen;
 }
 
 // --- Emoji ---
@@ -287,10 +284,6 @@ export function toggleProfilePanel(): void {
 export function toggleTrainerVisibility(): void {
     const panel = document.getElementById('trainer-infobox')!;
     togglePanel(panel);
-    // Preload audio when opening trainer
-    if (_CURRENT_PANEL === panel) {
-        _onTrainerOpenFn();
-    }
 }
 
 declare global {
@@ -816,14 +809,18 @@ export function closeScreenPinningModal(): void {
 
 export function downloadState(): void {
     const stateJson = JSON.stringify({
+        format_version: 1,
+        exported_at: getCurrentTimestamp(),
         state: STATE,
         history: getSessionHistory()
     }, null, 2);
-    const data = new Blob([stateJson]);
+    const data = new Blob([stateJson], { type: 'application/json' });
 
     const downloadElem = document.createElement('a');
     downloadElem.href = URL.createObjectURL(data);
     downloadElem.download = 'bsharp_state_' + Math.round(getCurrentTimestamp()) + '.json';
+    document.body.appendChild(downloadElem);
     downloadElem.click();
     downloadElem.remove();
+    setTimeout(() => URL.revokeObjectURL(downloadElem.href), 60000);
 }

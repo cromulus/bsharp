@@ -1,7 +1,9 @@
+import { initBackupImport } from './backupUi';
+import { initPwa } from './pwa';
 import { loadState, getCurrentProfile, isRecent, STATE } from './state';
 import {
     playAudio, selectFlagWrapper, nextAudio, resetStats, changeSelector,
-    changeInstrumentSelector, onTrainerOpen, playChord, getEmojiLock, stopCurrentAudio,
+    changeInstrumentSelector, playChord, getEmojiLock, stopCurrentAudio,
     _CORRECT_COLOR
 } from './game';
 import { initOnboarding } from './onboarding';
@@ -20,7 +22,7 @@ import { cleanSessionHistory } from './session_cleanup';
 import { startNextArrowFill, resetNextArrowFill } from './nextArrowAnimation';
 
 // Register callbacks to break circular dependency between ui.ts and game.ts
-registerGameCallbacks(getEmojiLock, resetStats, changeSelector, onTrainerOpen);
+registerGameCallbacks(getEmojiLock, resetStats, changeSelector);
 
 // Expose functions still used by inline handlers.
 const w = window as unknown as Record<string, unknown>;
@@ -154,6 +156,8 @@ document.addEventListener('click', (e) => {
 }, true);
 
 document.addEventListener('DOMContentLoaded', function () {
+    void initPwa();
+    initBackupImport();
     loadState();
 
     const profile = getCurrentProfile();
@@ -175,3 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
     cleanSessionHistory();
     initActiveState();
 });
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopCurrentAudio();
+});
+window.addEventListener('pagehide', stopCurrentAudio);

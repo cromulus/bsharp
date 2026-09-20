@@ -975,3 +975,47 @@ div.gray {
 div.lightpurple {
     background-color: $lightpurple;
 }
+
+// Browser chrome, notches and the Home Screen home indicator all vary on iOS.
+html { height: 100%; }
+body { height: 100%; height: 100dvh; }
+div.cim-container {
+    box-sizing: border-box;
+    padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+}
+div.hamburger {
+    margin-top: max(10px, env(safe-area-inset-top));
+    margin-right: max(16px, env(safe-area-inset-right));
+}
+button, a, select { touch-action: manipulation; }
+input, select, textarea { font-size: max(16px, 1rem); }
+.pwa-settings { font-size: 1rem; line-height: 1.5; }
+.pwa-settings p { margin: 0.75rem 0; }
+#audio-status:not(:empty), #storage-status:not(:empty) {
+    position: fixed;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 5%;
+    width: 90%;
+    box-sizing: border-box;
+    padding: 12px;
+    z-index: 1000;
+    background: #fff;
+    color: #222;
+    border: 2px solid #7b1fa2;
+    border-radius: 8px;
+    font-size: 1rem;
+    line-height: 1.5;
+    pointer-events: none;
+}
+@media (max-height: 500px) and (orientation: landscape) {
+    body { position: static; height: auto; min-height: 100dvh; }
+    div.cim-container { min-height: 100dvh; }
+    #panel-area > .panel { max-height: 75dvh; }
+}
+.pwa-settings [hidden] { display: none !important; }
+.pwa-settings input[type=file] { max-width: 100%; }
+
+#storage-status:not(:empty) { bottom: auto; top: max(12px, env(safe-area-inset-top)); }
+.pwa-settings summary { cursor: pointer; min-height: 44px; display: list-item; }
+.pwa-settings label { display: block; margin-top: 1rem; }
+.pwa-settings button { min-height: 44px; padding: 8px 12px; font-size: 1rem; }

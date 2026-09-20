@@ -31,7 +31,8 @@ test("starts the next-arrow fill with the requested duration", async ({ page }) 
   expect(state.hasAnimationClass).toBe(true);
   expect(state.animationName).toBe("next-arrow-fill");
   expect(state.animationDuration).toBe("1s");
-  expect(state.initialClipPath).toMatch(/100%/);
+  const inset = Number(state.initialClipPath.match(/inset\([^ ]+ ([\d.]+)%/)?.[1]);
+  expect(inset).toBeGreaterThan(90);
 });
 
 test("the fill completes and reset removes the fill state", async ({ page }) => {

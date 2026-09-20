@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 import { DEVICE } from "./device";
 
 export default defineConfig({
@@ -16,6 +16,7 @@ export default defineConfig({
       name: "chromium",
       use: { ...DEVICE },
     },
+    { name: "webkit", use: { ...devices["iPhone 13"], defaultBrowserType: "webkit" } },
   ],
   webServer: {
     command: "npx http-server ../dist -p 8080 -c-1 --silent",

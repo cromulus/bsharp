@@ -1,4 +1,4 @@
-import { getSessionHistory, SESSION_HISTORY_KEY, isRecent } from './state';
+import { getSessionHistory, SESSION_HISTORY_KEY, isRecent, setObject } from './state';
 import { SessionStats } from './types';
 
 export function cleanSessionHistory(): void {
@@ -33,5 +33,5 @@ export function cleanSessionHistory(): void {
         }
     }
 
-    localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(fullHistory));
+    setObject(SESSION_HISTORY_KEY, fullHistory);
 }
