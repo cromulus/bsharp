@@ -7,7 +7,10 @@ export async function openMenu(page: Page): Promise<void> {
     el.classList.contains("visible"),
   );
   if (!isOpen) {
-    await page.locator("#hamburger-link").click();
+    await page.locator("#hamburger-link").focus();
+    await page.keyboard.down("Space");
+    await page.waitForTimeout(1300);
+    await page.keyboard.up("Space");
     await expect(menu).toHaveClass(/visible/);
   }
 }
@@ -54,4 +57,11 @@ export function collectJsErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on("pageerror", (err) => errors.push(err.message));
   return errors;
+}
+
+/** Change a parent-only practice selector, then return to the child view. */
+export async function choosePracticeSetting(page: Page, id: string, value: string): Promise<void> {
+  await openMenu(page);
+  await page.locator(`#${id}`).selectOption(value);
+  await closeMenu(page);
 }

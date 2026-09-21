@@ -10,7 +10,7 @@ test("hamburger toggles expansion bar", async ({ page }) => {
   const menu = page.locator("#menu-container");
   await expect(menu).not.toHaveClass(/visible/);
 
-  await page.locator("#hamburger-link").click();
+  await openMenu(page);
   await expect(menu).toHaveClass(/visible/);
 
   await page.locator("#hamburger-link").click();

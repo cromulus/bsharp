@@ -9,7 +9,7 @@ import {
 import { getCurrentCoefficients, updateStartTimeIfNeeded, updateStats, normalizeStatsObject } from './stats';
 import { getAudioFiles, audioFileElem, playChordFiles, playMedia, stopPlayback } from './audio';
 import { populateFlags, updateStatsDisplay, resetCatEmoji, setCatEmoji, setChordDisplayMode, populateProfileUiElements } from './ui';
-import { dismissOnboardingStep, showOnboardingGuessPrompt, showOnboardingGoNextPrompt, showOnboardingPlayPrompt } from './onboarding';
+import { getChildStage, setChildStage } from './childUi';
 
 let _COLORS: string[] | null = null;
 let _CHORDS_ON = false;
@@ -18,6 +18,7 @@ let _SELECTED_ELEM: HTMLElement | null = null;
 let _CORRECT_ELEM: HTMLElement | null = null;
 let _CURRENT_AUDIO: AudioFileInfo | null = null;
 let _AUDIO_PLAYED = false;
+let correctionPending = false;
 let _EMOJI_LOCK = false;
 let _CURRENT_COEFFICIENTS: number[] | null = null;
 let _PERSIST_REACTION_FACE_ENABLED = false;
@@ -45,12 +46,14 @@ export function chordsOn(): boolean {
 }
 
 function onAudioEnded(): void {
-    _AUDIO_PLAYED = true;
-    showOnboardingGuessPrompt();
+    document.body.classList.remove('sound-playing');
 }
 
 export function stopCurrentAudio(): void {
     stopPlayback();
+    document.body.classList.remove('sound-playing');
+    document.querySelectorAll('.preview-playing').forEach(el => el.classList.remove('preview-playing'));
+    if (getChildStage() === 'loading') setChildStage('ready');
 }
 
 
@@ -94,22 +97,53 @@ export function populateAudio(): void {
     const playButton = document.getElementById('play-button');
     if (playButton) playButton.classList.remove('deactivated');
     _AUDIO_PLAYED = false;
+    correctionPending = false;
+    setChildStage(getCurrentProfile().stats.identifications >= getCurrentTargetNumber() ? 'complete' : 'ready');
 }
 
 export function playAudio(): void {
+    if (getChildStage() === 'complete' || getChildStage() === 'explore') return;
     const playButton = document.getElementById('play-button');
     if (playButton && playButton.classList.contains('deactivated')) return;
     if (!_CURRENT_AUDIO) return;
 
-    dismissOnboardingStep('play');
+    const wasAnswered = _SELECTED_ELEM !== null;
     _AUDIO_PLAYED = false;
     const chord = audioFileElem(_CURRENT_AUDIO, onAudioEnded);
-    playMedia(chord, () => { _AUDIO_PLAYED = true; });
+    if (!correctionPending && !wasAnswered) setChildStage('loading');
+    playMedia(chord, () => {
+        _AUDIO_PLAYED = true;
+        document.body.classList.add('sound-playing');
+        if (correctionPending) {
+            correctionPending = false;
+            setChildStage('feedback');
+        } else if (!wasAnswered) setChildStage('choose');
+    }, () => {
+        if (!wasAnswered) setChildStage('ready');
+    });
 }
 
+export function toggleExplore(): void {
+    if (getChildStage() === 'complete') return;
+    const exploring = getChildStage() === 'explore';
+    populateAudio();
+    if (!exploring) setChildStage('explore');
+}
+
+
 export function selectFlagWrapper(wrapperElem: HTMLElement): void {
-    if (_SELECTED_ELEM !== null) return;
-    if (!_AUDIO_PLAYED) return;
+    if (document.body.classList.contains('parent-mode')) return;
+    if (getChildStage() === 'complete') return;
+    if (getChildStage() === 'explore') {
+        playChord(wrapperElem.dataset.color!);
+        return;
+    }
+    if (correctionPending) {
+        if (wrapperElem.dataset.color === _CORRECT_COLOR) playAudio();
+        return;
+    }
+    if (_SELECTED_ELEM !== null || !_AUDIO_PLAYED) return;
+    stopCurrentAudio();
 
     const chosenColor = wrapperElem.dataset.color;
     const elem = wrapperElem.querySelector(':scope > .flag') as HTMLElement | null;
@@ -133,7 +167,8 @@ export function selectFlagWrapper(wrapperElem: HTMLElement): void {
         setCatEmoji(5);
     }
     _SELECTED_ELEM = elem;
-    showOnboardingGoNextPrompt(isCorrect);
+    correctionPending = !isCorrect;
+    setChildStage(isCorrect ? 'feedback' : 'correction');
 
     if (getCurrentProfile().persist_reaction_face &&
         getCurrentProfile().stats.identifications < getCurrentTargetNumber()) {
@@ -150,15 +185,21 @@ export function selectFlagWrapper(wrapperElem: HTMLElement): void {
     }
 
     // Single note trainer disabled for now
-    const nextButton = document.getElementById('next-chord');
-    if (nextButton) nextButton.classList.remove('deactivated');
+
 }
 
 export function nextAudio(): void {
     const nextButton = document.getElementById('next-chord');
     if (!nextButton || nextButton.classList.contains('deactivated')) return;
 
-    dismissOnboardingStep('goNext');
+    if (getCurrentProfile().stats.identifications >= getCurrentTargetNumber()) {
+        stopCurrentAudio();
+        getCurrentProfile().stats.done = true;
+        saveSessionHistory();
+        saveState();
+        setChildStage('complete');
+        return;
+    }
 
     if (_CHORDS_ON && getCurrentProfile().reveal_chord_mode === 'after_guess') {
         document.getElementById('flag-holder')!.classList.remove('chord-notes');
@@ -184,7 +225,6 @@ export function resetStats(done = true): void {
     saveState();
     updateStatsDisplay();
     populateAudio();
-    showOnboardingPlayPrompt();
 }
 
 function retrieveSavedStats(): void {
@@ -223,7 +263,6 @@ export function changeSelector(to?: string): void {
 
     populateFlags(getSelectedColors, chordsOn);
     populateAudio();
-    showOnboardingPlayPrompt();
     saveState();
 
 }
@@ -247,7 +286,11 @@ export function changeInstrumentSelector(to?: string): void {
 }
 
 export function playChord(color: string): void {
-    playChordFiles(getCurrentProfile().current_instrument, color, () => {});
+    playChordFiles(getCurrentProfile().current_instrument, color, () => {
+        document.querySelectorAll('.preview-playing').forEach(el => el.classList.remove('preview-playing'));
+    });
+    document.querySelectorAll('.preview-playing').forEach(el => el.classList.remove('preview-playing'));
+    document.getElementById(`${color}-flag`)?.classList.add('preview-playing');
 }
 
 export function getEmojiLock(): boolean {

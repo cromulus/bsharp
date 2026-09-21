@@ -5,6 +5,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
   await page.locator("#next-chord").evaluate((element) => {
     element.classList.remove("deactivated");
+    (element as HTMLButtonElement).disabled = false;
   });
 });
 
@@ -15,9 +16,8 @@ async function startFill(page: Page, durationMs: number): Promise<void> {
 }
 
 test("starts the next-arrow fill with the requested duration", async ({ page }) => {
-  await startFill(page, 1000);
-
   const state = await page.locator("#next-chord > i").evaluate((element) => {
+    (window as any).__bsharp_start_next_arrow_fill(1000);
     const arrow = element as HTMLElement;
     const styles = getComputedStyle(arrow, "::after");
     return {

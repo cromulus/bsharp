@@ -38,13 +38,14 @@
     <div id="audio-status" role="status" aria-live="polite"></div>
     <div class="cim-container">
         <div class="menu-container" id="menu-container">
+            <div class="brand" aria-label="BSharp"><span class="brand-mark">B♯</span><span class="brand-name">little listening club</span></div>
             <div class="menu-spacer"></div>
             <div class="expansion-container">
                 <div class="infobox-container" id="home-button">
                     <a href="#"
                        class="infobox-trigger"
                        onclick="close_panel()">
-                    <i class="fa fa-solid fa-home"></i>
+                    <i class="fa fa-solid fa-home" aria-hidden="true"></i><span class="nav-label">Play</span>
                   </a>
                 </div>
                 <div class="infobox-container">
@@ -52,14 +53,14 @@
                        id="trainer-infobox-trigger"
                        class="infobox-trigger"
                        onclick="toggle_trainer_visibility()">
-                    <i class="fa fa-solid fa-music"></i>
+                    <i class="fa fa-solid fa-music" aria-hidden="true"></i><span class="nav-label">Sounds</span>
                   </a>
                 </div>
                 <div class="infobox-container">
                     <a href="#" class="infobox-trigger"
                        id="i-infobox-trigger"
                        onclick="toggle_infobox_visibility()">
-                    <i class="fa fa-solid fa-info-circle"></i>
+                    <i class="fa fa-solid fa-info-circle" aria-hidden="true"></i><span class="nav-label">How to play</span>
                   </a>
                 </div>
                 <div class="infobox-container">
@@ -67,7 +68,7 @@
                        id="stats-history-trigger"
                        class="infobox-trigger"
                        onclick="toggle_stats_history_visibility()">
-                    <i class="fa fa-solid fa-line-chart"></i>
+                    <i class="fa fa-solid fa-line-chart" aria-hidden="true"></i><span class="nav-label">History</span>
                   </a>
                 </div>
                 <!-- Profiles -->
@@ -77,26 +78,39 @@
                        class="infobox-trigger"
                        onclick="toggle_profile_panel()">
                     <i class="fa fa-solid" id="profile-icon"></i>
-                    <span id="profile-text"></span>
+                    <span id="profile-text"></span><span class="nav-label">Profiles</span>
                   </a>
                 </div>
             </div>
             <div class="hamburger">
-                <a href="#"
-                   id="hamburger-link"
-                   onclick="toggle_expansion_bar()"
-                   >
-                    <i class="fa fa-bars"></i>
-                </a>
+                <button id="hamburger-link" type="button" aria-label="Parent controls. Hold for a moment to open" aria-expanded="false">
+                    <i class="fa fa-lock" aria-hidden="true"></i><span>Grown-ups</span>
+                </button>
             </div>
+        </div>
+        <span id="parent-hint" role="status"></span>
+        <div class="child-heading">
+            <div class="step-pictures" aria-label="Listen, choose a color, then next">
+                <span data-game-step="listen" aria-label="Listen"><i class="fa fa-volume-up" aria-hidden="true"></i></span>
+                <span class="step-line" aria-hidden="true"></span>
+                <span data-game-step="choose" aria-label="Choose a color"><i class="fa fa-hand-pointer-o" aria-hidden="true"></i></span>
+                <span class="step-line" aria-hidden="true"></span>
+                <span data-game-step="next" aria-label="Next"><i class="fa fa-arrow-right" aria-hidden="true"></i></span>
+            </div>
+            <h1 id="child-prompt" aria-live="polite">Tap to listen</h1>
         </div>
         <div id="panel-area">
             <!-- Infobox -->
             <div class="infobox panel" id="i-infobox">
-                <p>This is an implementation of <a href="https://www.ganbar.us/documents/sakakibara_2012_chord_identification.pdf">Eguchi's Chord Identification method</a>. See also <a href="https://ichionkai.co.jp/english3.html">Ichionkai Music School</a>.</p>
-                <p><a href="https://youtu.be/kNfkm6PQC20">Here is a short video explaining how we use it</a>.</p>
-                <p>This is a method for teaching absolute pitch to children aged 2-6. Children should practice ~5x per day for 2-3 minutes (about 20-25 identifications). Chords are always identified with colors, and progress in the sequence <span onclick="trigger_easter_egg()">red</span> (CEG), yellow (CFA), blue (HDG), black (ACF), green (DGH), orange (EGC), purple (FAC), pink (GHD), brown (GCE).</p>
-                <p>Introduce the chords to the children one at a time, spacing out new chord introductions by at least 2 weeks each time. Do not introduce a new chord until the child can identify all presented chords with 100% accuracy.</p>
+                <h2>Listen together, a little at a time</h2>
+                <p>First, use <strong>Try the sounds</strong>. Tap a color, listen together, and name the color. Begin with red alone if the sounds are new. Add yellow when your child knows red.</p>
+                <p>In practice, tap the speaker, then let your child choose a color. The arrow appears when it is time for the next sound. After a mix-up, the matching color is highlighted: tap it to hear that sound again. Only the first answer is recorded.</p>
+                <p>The five stepping stones show how far through the session you are, not how many answers were right. Practice ends at the target you set. There is no timer to beat, and you can stop early.</p>
+                <h3>What this is practicing</h3>
+                <p>The aim is to associate a chord's sound with a consistent color, without needing to read music. Repeated, brief practice builds familiarity. Parents choose when to introduce another color; the app never advances a level automatically.</p>
+                <p>The published chord-identification routine used 20–25 trials in short, adult-led sessions, several times daily. New chords were added individually, at least two weeks apart and only after the earlier set was reliably identified. Keep practice comfortable; the app's target is adjustable.</p>
+                <p>This is a practice aid inspired by <a href="https://www.ganbar.us/documents/sakakibara_2012_chord_identification.pdf">Sakakibara's study of the Eguchi method</a>, not a guarantee or test of absolute pitch. The study used piano and adult guidance; this app's guitar sounds and independent play have not been validated by that study. Later note-identification work is not implemented here.</p>
+                <p><a href="https://ichionkai.co.jp/english3.html">Read about the method at Ichionkai Music School</a>.</p>
             </div>
 
             <!-- Music player / Trainer -->
@@ -190,12 +204,12 @@
                     <input type="checkbox" id="persist_reaction_face_setting" class="entry">
                 </div>
                 <div class="entry-row">
-                    <label for="enable_onboarding_hints_setting">Enable Onboarding Hints:</label>
+                    <label for="enable_onboarding_hints_setting">Gentle visual hints:</label>
                     <input type="checkbox" id="enable_onboarding_hints_setting" class="entry">
                 </div>
                 <div class="entry-row">
-                    <label for="target_number_setting">Target Number:</label>
-                    <input type="number" id="target_number_setting" class="entry">
+                    <label for="target_number_setting">Sounds per practice:</label>
+                    <input type="number" id="target_number_setting" class="entry" min="1" max="100">
                 </div>
                 <div class="entry-row">
                     <label for="color_scheme_setting">Color scheme:</label>
@@ -229,16 +243,36 @@
         </div>
         <div class="control-wrapper">
             <div class="control-container">
+                <div class="listening-cat" aria-hidden="true">
+                    <svg viewBox="0 0 160 160" fill="none">
+                        <path d="M35 65 24 17Q24 8 34 14L64 38M96 38 126 14Q137 8 136 20L125 68" fill="#E5AD74" stroke="#513D36" stroke-width="5" stroke-linejoin="round"/>
+                        <path d="m35 28 5 27 15-13" stroke="#C37E67" stroke-width="6"/>
+                        <ellipse cx="80" cy="88" rx="62" ry="53" fill="#F4C891" stroke="#513D36" stroke-width="5"/>
+                        <path d="m65 38 4 14m11-15v15m15-14-4 14" stroke="#D99F61" stroke-width="6" stroke-linecap="round"/>
+                        <g class="cat-eyes"><ellipse cx="56" cy="83" rx="5" ry="8" fill="#513D36"/><ellipse cx="104" cy="83" rx="5" ry="8" fill="#513D36"/></g>
+                        <g class="cat-rest-eyes" stroke="#513D36" stroke-width="5" stroke-linecap="round"><path d="m48 84 8 4 8-4m32 0 8 4 8-4"/></g>
+                        <ellipse cx="42" cy="101" rx="9" ry="5" fill="#E9A18A"/><ellipse cx="118" cy="101" rx="9" ry="5" fill="#E9A18A"/>
+                        <path d="m75 98 5 5 5-5Z" fill="#513D36" stroke="#513D36" stroke-linejoin="round" stroke-width="3"/>
+                        <path d="M80 104q-8 14-15 2m15-2q8 14 15 2" stroke="#513D36" stroke-width="3" stroke-linecap="round"/>
+                        <path d="m15 94 19 4m-18 9 18-2m92-7 19-4m-19 11 18 2" stroke="#513D36" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
                 <div class="controls">
-                    <a id="play-button" class="deactivated" onclick="play_audio()">
-                        <i class="fa fa-play" aria-hidden="true"></i>
-                    </a>
-                    <a id="next-chord" class="deactivated" onclick="next_audio()">
-                        <i class="fa fa-arrow-right" aria-hidden="true"></i>
-                    </a>
+                    <button id="play-button" type="button" class="deactivated" onclick="play_audio()" aria-label="Listen to the sound again">
+                        <i class="fa fa-volume-up" aria-hidden="true"></i><span class="sr-only">Listen</span>
+                    </button>
+                    <button id="next-chord" type="button" class="deactivated" onclick="next_audio()" aria-label="Next sound" disabled>
+                        <i class="fa fa-arrow-right" aria-hidden="true"></i><span class="sr-only">Next</span>
+                    </button>
                 </div>
             </div>
         </div>
+        <section id="session-finish" aria-label="Practice finished">
+            <span class="finish-picture" aria-hidden="true">☀</span>
+            <h2>A little listening. A little rest.</h2>
+            <p>Practice saved. Time for a break together.</p>
+            <span class="finish-check" aria-hidden="true"><i class="fa fa-check"></i></span>
+        </section>
         <div class="flag-container" id="flag-holder">
             <div class="flag-spacer"></div>
             <!-- Red: C E G -->
@@ -410,8 +444,13 @@
                 </div>
             </div>
             <div class="flag-spacer"></div>
-            <div id="onboarding-overlay"></div>
+
         </div>
+        <footer class="child-footer">
+            <div id="practice-progress" role="progressbar" aria-label="Practice progress" aria-valuemin="0"></div>
+            <button id="explore-button" type="button" onclick="toggle_explore()" aria-label="Explore sounds without scoring" aria-pressed="false"><i class="fa fa-music" aria-hidden="true"></i><span>Try the sounds</span></button>
+        </footer>
+        <div class="parent-session-heading"><h2>Practice setup</h2><p>Set this up together, then return to play. Hold the lock to come back.</p></div>
         <div class="stats controls" id="stats-container">
             <div class="emoji-container">
                 <span id="reaction-emoji"></span>
@@ -435,14 +474,12 @@
                     </div>
                 </div>
             </div>
-            <a id="reset-button" onclick="reset_stats()">
-                <i class="fa fa-refresh" aria-hidden="true"></i>
-            </a>
+            <button type="button" id="reset-button" onclick="reset_stats()"><i class="fa fa-refresh" aria-hidden="true"></i> Start a new practice</button>
         </div>
         <div class="selectors">
-            <select class="selector" name="chords" id="chord-selector" onchange="change_selector()">
+            <select class="selector" name="chords" aria-label="Colors to practice" id="chord-selector" onchange="change_selector()">
             <optgroup label="White chords">
-                <option value="red" hidden>Level 0: Red (C E G)</option>
+                <option value="red">First sound: Red (C E G)</option>
                 <option value="yellow">Level 1: Yellow (C F A)</option>
                 <option value="blue">Level 2: Blue (B D G)</option>
                 <option value="black">Level 3: Black (A C F)</option>
@@ -460,7 +497,7 @@
                 <option value="skyblue">Level 5: Sky Blue (E&#x266D; G B&#x266D;)</option>
             </optgroup>
             </select>
-            <select class="selector" name="instrument" id="instrument-selector" onchange="change_instrument_selector()">
+            <select class="selector" name="instrument" aria-label="Instrument" id="instrument-selector" onchange="change_instrument_selector()">
                 <option value="piano_1">Piano</option>
                 <option value="guitar">Guitar</option>
                 <option value="guitar-strummed">Guitar (Strummed)</option>

@@ -74,7 +74,7 @@ export function audioFileElem(audioFile: AudioFileInfo, onEnded: () => void): HT
     return prepareAudio('static/chords/' + audioFile.filename, onEnded);
 }
 
-export function playMedia(elem: HTMLAudioElement, onStarted: () => void = () => {}): void {
+export function playMedia(elem: HTMLAudioElement, onStarted: () => void = () => {}, onFailure: () => void = () => {}): void {
     stopPlayback();
     const id = playbackId;
     const status = document.getElementById('audio-status');
@@ -86,6 +86,7 @@ export function playMedia(elem: HTMLAudioElement, onStarted: () => void = () => 
         if (id === playbackId) onStarted();
     }).catch(error => {
         if (id !== playbackId || error.name === 'AbortError') return;
+        onFailure();
         if (status) status.textContent = 'Audio could not start. Tap Play to retry; check your volume and connection.';
     });
 }

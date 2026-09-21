@@ -1,7 +1,8 @@
+import { openMenu, closeMenu } from './helpers';
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); (window as any).__bsharp_test_deterministic_color = "red"; });
   await page.goto("/");
 });
 
@@ -114,7 +115,9 @@ test("reset clears stats to zero", async ({ page }) => {
   await expect(page.locator("#stats-total")).toHaveText("1");
 
   // Click reset
+  await openMenu(page);
   await page.locator("#reset-button").click();
+  await closeMenu(page);
 
   await expect(page.locator("#stats-correct")).toHaveText("0");
   await expect(page.locator("#stats-total")).toHaveText("0");

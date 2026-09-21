@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); (window as any).__bsharp_test_deterministic_color = "red"; });
   await page.addInitScript(() => {
     (window as any).__audioSpy = {
       callLog: [] as string[],

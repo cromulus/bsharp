@@ -4,13 +4,13 @@ import { loadState, getCurrentProfile, isRecent, STATE } from './state';
 import {
     playAudio, selectFlagWrapper, nextAudio, resetStats, changeSelector,
     changeInstrumentSelector, playChord, getEmojiLock, stopCurrentAudio,
-    _CORRECT_COLOR
+    toggleExplore, _CORRECT_COLOR
 } from './game';
-import { initOnboarding } from './onboarding';
+import { installParentGate } from './childUi';
 import {
     toggleExpansionBar, toggleInfoboxVisibility, toggleStatsHistoryVisibility,
     toggleProfilePanel, applyColorScheme,
-    toggleTrainerVisibility, closePanel, initActiveState,
+    toggleTrainerVisibility, closePanel, closeParentArea, initActiveState,
     populateProfileUiElements,
     updateStatsDisplay, setChordDisplayMode,
     openProfileAdder, closeProfileAdder, addProfile, submitProfileChanges,
@@ -34,7 +34,8 @@ w.change_instrument_selector = changeInstrumentSelector;
 w.toggle_expansion_bar = toggleExpansionBar;
 w.toggle_trainer_visibility = toggleTrainerVisibility;
 w.toggle_infobox_visibility = toggleInfoboxVisibility;
-w.close_panel = closePanel;
+w.close_panel = closeParentArea;
+w.toggle_explore = toggleExplore;
 w.toggle_stats_history_visibility = toggleStatsHistoryVisibility;
 w.toggle_profile_panel = toggleProfilePanel;
 w.open_profile_adder = openProfileAdder;
@@ -88,6 +89,14 @@ export function installFlagPointerHandling(): void {
     const holder = document.getElementById('flag-holder');
     if (!holder) return;
 
+    holder.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            const pad = (event.target as Element).closest('.flag-wrapper.visible') as HTMLElement | null;
+            if (pad) selectFlagWrapper(pad);
+        }
+    });
+
     holder.addEventListener('pointerdown', (event) => {
         if (pendingFlagPointer !== null) {
             pendingFlagPointer = null;
@@ -132,7 +141,6 @@ export function installFlagPointerHandling(): void {
             isPointInsideElementBounds(event.clientX, event.clientY, pending.wrapperElem)
         ) {
             event.preventDefault();
-            stopCurrentAudio();
             selectFlagWrapper(pending.wrapperElem);
         }
     });
@@ -174,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
     changeInstrumentSelector(profile.current_instrument);
     changeSelector(profile.current_chord);
     installFlagPointerHandling();
-    initOnboarding();
+    installParentGate(() => { stopCurrentAudio(); toggleExpansionBar(); }, closeParentArea);
     updateStatsDisplay();
     cleanSessionHistory();
     initActiveState();

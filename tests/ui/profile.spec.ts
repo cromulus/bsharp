@@ -107,14 +107,9 @@ test("hamburger is clickable with long profile name", async ({ page }) => {
 
   await openMenu(page);
 
-  // Profile text should be visually truncated but still showing some name
-  const profileText = page.locator("#profile-text");
-  const { offsetWidth, scrollWidth } = await profileText.evaluate((el) => ({
-    offsetWidth: (el as HTMLElement).offsetWidth,
-    scrollWidth: el.scrollWidth,
-  }));
-  expect(scrollWidth).toBeGreaterThan(offsetWidth); // text is clipped
-  expect(offsetWidth).toBeGreaterThan(0); // still visible
+  // The parent navigation has stable labels so a long name cannot cover the exit.
+  await expect(page.locator('#profile-text')).toHaveText('A Very Long Profile Name');
+  await expect(page.locator('#hamburger-link')).toBeVisible();
 
   // The hamburger should still be clickable to close the menu
   await page.locator("#hamburger-link").click({ force: false });

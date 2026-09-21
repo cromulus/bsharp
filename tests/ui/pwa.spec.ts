@@ -15,7 +15,7 @@ test('failed playback does not accept an unheard answer and can be retried', asy
   });
   await page.locator('#play-button').click();
   await expect(page.locator('#audio-status')).toContainText('Tap Play');
-  await page.locator('#red-flag .flag').click();
+  await page.locator('#red-flag .flag').click({ force: true });
   await expect(page.locator('#next-chord')).toHaveClass(/deactivated/);
   await page.locator('#play-button').click();
   await expect(page.locator('#audio-status')).toBeEmpty();
@@ -86,6 +86,8 @@ test('unavailable storage reports unsaved progress without breaking practice', a
   expect(errors).toEqual([]);
 });
 
+test.describe('uncached audio failures', () => {
+  test.use({ serviceWorkers: 'block' });
 test('audio retries after a failed network request', async ({ page }) => {
   await page.route('**/static/chords/**', route => route.abort());
   await page.goto('/');
@@ -101,4 +103,6 @@ test('audio retries after a failed network request', async ({ page }) => {
   await page.locator('#play-button').click();
   await expect.poll(() => page.evaluate(() => (window as any).__retryStarted)).toBe(true);
   await expect(page.locator('#audio-status')).toBeEmpty();
+});
+
 });

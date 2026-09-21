@@ -12,7 +12,7 @@ import {
     calculatePercentage, calculateNeutralLevel, getCatEmoji, normalizeStatsObject
 } from './stats';
 import { formatDatetime, getCurrentTimestamp, validInt } from './utils';
-import { resetOnboarding } from './onboarding';
+import { updateChildProgress, setChildStage, getChildStage } from './childUi';
 
 let _DOWNLOAD_ENABLED_CLICKS = 0;
 let _DOWNLOAD_ENABLED_LAST_CLICK: number | null = null;
@@ -71,6 +71,7 @@ function updateStatsContainer(containerElem: HTMLElement, correct: number, ident
 }
 
 export function updateStatsDisplay(): void {
+    updateChildProgress();
     const containerElem = document.getElementById('stats-container');
     if (!containerElem) return;
 
@@ -122,9 +123,16 @@ export function populateFlags(
 ): void {
     const colors = getSelectedColors();
     const baseElem = document.getElementById('flag-holder');
+    if (baseElem) {
+        const columns = colors.length <= 2 ? colors.length : colors.length === 4 ? 2 : 3;
+        baseElem.style.setProperty('--pad-cols', String(columns));
+        baseElem.style.setProperty('--pad-rows', String(Math.ceil(colors.length / columns)));
+    }
     if (!baseElem) return;
 
     for (const wrapperElem of baseElem.querySelectorAll('.flag-wrapper') as NodeListOf<HTMLElement>) {
+        wrapperElem.setAttribute('role', 'button');
+        wrapperElem.setAttribute('aria-label', `${wrapperElem.dataset.color!.replace('light', 'light ').replace('skyblue', 'sky blue')} sound`);
         if (colors.includes(wrapperElem.dataset.color!)) {
             wrapperElem.classList.add('visible');
         } else {
@@ -258,7 +266,22 @@ export function initActiveState(): void {
 
 export function toggleExpansionBar(): void {
     const menu = document.getElementById('menu-container');
-    if (menu) menu.classList.toggle('visible');
+    if (menu) {
+        const opening = !menu.classList.contains('visible');
+        menu.classList.toggle('visible', opening);
+        document.body.classList.toggle('parent-mode', opening);
+        document.getElementById('hamburger-link')?.setAttribute('aria-expanded', String(opening));
+        if (!opening) closePanel();
+    }
+}
+
+export function closeParentArea(): void {
+    closePanel();
+    document.body.classList.remove('parent-mode');
+    document.getElementById('menu-container')?.classList.remove('visible');
+    document.getElementById('hamburger-link')?.setAttribute('aria-expanded', 'false');
+    document.getElementById('parent-hint')!.textContent = '';
+    setChildStage(getChildStage());
 }
 
 export function toggleInfoboxVisibility(): void {
@@ -569,7 +592,7 @@ export function closeProfileAdder(): void {
 export function addProfile(): void {
     const newProfileValues = getProfileSettings();
     const nameTaken = isProfileNameTaken(newProfileValues.name);
-    const targetNumValid = validInt(newProfileValues.target_number);
+    const targetNumValid = validInt(newProfileValues.target_number) && Number(newProfileValues.target_number) > 0;
 
     if (newProfileValues.icon === null || newProfileValues.name === '') {
         alert('Must specify a profile name and icon.');
@@ -612,7 +635,7 @@ export function submitProfileChanges(): void {
         alert('Must specify an icon!');
         return;
     }
-    if (!validInt(profileValues.target_number)) {
+    if (!validInt(profileValues.target_number) || Number(profileValues.target_number) < 1) {
         alert('Must specify a valid target number, got: ' + profileValues.target_number);
         return;
     }
@@ -677,7 +700,7 @@ export function setCurrentProfile(profile: Profile): void {
     }
 
     normalizeStatsObject(profile.stats);
-    resetOnboarding();
+
     populateProfileUiElements();
     setChordDisplayMode(profile.chord_display_mode);
     applyColorScheme(profile.color_scheme);

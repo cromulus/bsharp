@@ -1,3 +1,4 @@
+import { openMenu, choosePracticeSetting } from './helpers';
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -23,7 +24,7 @@ test("default level shows red and yellow flags", async ({ page }) => {
 
 test("selecting blue shows red, yellow, blue", async ({ page }) => {
   const selector = page.locator("#chord-selector");
-  await selector.selectOption("blue");
+  await choosePracticeSetting(page, "chord-selector", "blue");
 
   await expect(page.locator("#red-flag")).toBeVisible();
   await expect(page.locator("#yellow-flag")).toBeVisible();
@@ -35,7 +36,7 @@ test("black chord level shows all white plus selected black chord", async ({
   page,
 }) => {
   const selector = page.locator("#chord-selector");
-  await selector.selectOption("gray");
+  await choosePracticeSetting(page, "chord-selector", "gray");
 
   // All 9 white chords should be visible
   for (const color of [
@@ -61,7 +62,7 @@ test("flag container gets flags-compact class with more than 9 flags", async ({
   page,
 }) => {
   const selector = page.locator("#chord-selector");
-  await selector.selectOption("gray");
+  await choosePracticeSetting(page, "chord-selector", "gray");
 
   await expect(page.locator("#flag-holder")).toHaveClass(/flags-compact/);
 });
@@ -73,14 +74,15 @@ test("flag container gets flags-expanded class with fewer than 4 flags", async (
   await expect(page.locator("#flag-holder")).toHaveClass(/flags-expanded/);
 });
 
-test("red option is hidden by default", async ({ page }) => {
+test("parents can select one color for familiarization", async ({ page }) => {
   const redOption = page.locator("#chord-selector option[value='red']");
-  await expect(redOption).toHaveAttribute("hidden", "");
+  await expect(redOption).not.toHaveAttribute("hidden", "");
 });
 
 test("instrument selector appears next to level selector with available instruments", async ({
   page,
 }) => {
+  await openMenu(page);
   await expect(page.locator(".selectors > #chord-selector + #instrument-selector")).toBeVisible();
 
   const selector = page.locator("#instrument-selector");
@@ -97,7 +99,7 @@ test("selecting an instrument persists it on the current profile", async ({
   context,
 }) => {
   const selector = page.locator("#instrument-selector");
-  await selector.selectOption("guitar-strummed");
+  await choosePracticeSetting(page, "instrument-selector", "guitar-strummed");
 
   await expect(selector).toHaveValue("guitar-strummed");
   await expect
@@ -131,7 +133,7 @@ test("selected instrument controls chord audio source", async ({ page }) => {
   });
   await page.goto("/");
 
-  await page.locator("#instrument-selector").selectOption("guitar");
+  await choosePracticeSetting(page, "instrument-selector", "guitar");
   await page.locator("#play-button").click();
 
   await expect
@@ -143,7 +145,7 @@ test("selected instrument controls chord audio source", async ({ page }) => {
     )
     .toContainEqual(expect.stringContaining("/static/chords/guitar/c4f4a4_yellow.mp3"));
 
-  await page.locator("#instrument-selector").selectOption("guitar-strummed");
+  await choosePracticeSetting(page, "instrument-selector", "guitar-strummed");
   await page.locator("#play-button").click();
 
   await expect

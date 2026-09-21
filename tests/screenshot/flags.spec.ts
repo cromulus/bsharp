@@ -1,3 +1,4 @@
+import { openMenu, choosePracticeSetting } from '../ui/helpers';
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -11,10 +12,6 @@ test.beforeEach(async ({ page }) => {
     (window as any).__bsharp_test_deterministic_color = "red";
   });
   await page.goto("/");
-  // Hide the play onboarding overlay (always shown on init)
-  await page.locator("#onboarding-overlay").evaluate((el) => {
-    el.classList.remove("visible");
-  });
 });
 
 test("baseline flag outlines", async ({ page }) => {
@@ -25,7 +22,7 @@ test("baseline flag outlines", async ({ page }) => {
 
 test("correct selection outline", async ({ page }) => {
   await page.locator("#play-button").click();
-  await page.waitForTimeout(1000);
+  await expect(page.locator("body")).toHaveAttribute("data-stage", "choose");
 
   // Red is the forced color, so clicking red is correct
   await page.locator("#red-flag .flag").click();
@@ -38,7 +35,7 @@ test("correct selection outline", async ({ page }) => {
 
 test("incorrect selection outline", async ({ page }) => {
   await page.locator("#play-button").click();
-  await page.waitForTimeout(1000);
+  await expect(page.locator("body")).toHaveAttribute("data-stage", "choose");
 
   // Red is the forced color, so clicking yellow is wrong
   await page.locator("#yellow-flag .flag").click();
@@ -85,96 +82,16 @@ function seedStateAtLevel(chord: string): string {
   return JSON.stringify(state);
 }
 
-// Scan a PNG buffer for the topmost and bottommost rows containing visible pixels.
-function glyphBounds(buf: Buffer): { top: number; bottom: number } {
-  const { PNG } = require("pngjs");
-  const png = PNG.sync.read(buf);
-  const { width, height, data } = png;
-  let top = height, bottom = 0;
-  for (let row = 0; row < height; row++) {
-    for (let col = 0; col < width; col++) {
-      if (data[(row * width + col) * 4 + 3] > 10) {
-        top = Math.min(top, row);
-        bottom = Math.max(bottom, row);
-        break;
-      }
-    }
-  }
-  return { top, bottom };
-}
-
-test("nav bar icons are consistently sized and aligned", async ({ page }) => {
-  await page.setViewportSize({ width: 900, height: 1200 });
-  await page.goto("/");
-
-  // Strip all backgrounds so element screenshots contain only the glyph
-  await page.evaluate(() => {
-    document.querySelectorAll("*").forEach((el) => {
-      (el as HTMLElement).style.setProperty("background", "transparent", "important");
-    });
-  });
-
-  const icons = page.locator(".expansion-container i.fa");
-  const count = await icons.count();
-
-  // Measure each icon's absolute glyph top/bottom (in screenshot pixels)
-  const iconRects = await icons.evaluateAll((els) =>
-    els.map((el) => {
-      const r = el.getBoundingClientRect();
-      return { top: r.top, bottom: r.bottom, height: r.height };
-    }),
-  );
-
-  const absoluteTops: number[] = [];
-  const absoluteBottoms: number[] = [];
-  const dpr = await page.evaluate(() => window.devicePixelRatio || 1);
-
-  for (let i = 0; i < count; i++) {
-    const buf = await icons.nth(i).screenshot({ omitBackground: true });
-    const bounds = glyphBounds(buf);
-    const absTop = iconRects[i].top + bounds.top / dpr;
-    const absBottom = iconRects[i].top + bounds.bottom / dpr;
-    absoluteTops.push(absTop);
-    absoluteBottoms.push(absBottom);
-  }
-
-  // Restore backgrounds for the visual snapshot
-  await page.evaluate(() => {
-    document.querySelectorAll("*").forEach((el) => {
-      (el as HTMLElement).style.removeProperty("background");
-    });
-  });
-
-  // Draw two shared reference lines: one at the lowest top, one at the highest bottom.
-  // All glyphs should touch both lines (no gap above or below).
-  const topLine = Math.min(...absoluteTops);
-  const bottomLine = Math.max(...absoluteBottoms);
-
-  await page.evaluate(({ topLine, bottomLine }) => {
-    const container = document.querySelector(".expansion-container")!;
-    const containerRect = container.getBoundingClientRect();
-    for (const y of [topLine, bottomLine]) {
-      const line = document.createElement("div");
-      line.style.cssText = `
-        position: absolute; left: 0;
-        top: ${y - containerRect.top}px;
-        width: 100%; height: 1px;
-        background: red; pointer-events: none; z-index: 9999;
-      `;
-      container.appendChild(line);
-    }
-  }, { topLine, bottomLine });
-
-  await expect(page.locator(".expansion-container")).toHaveScreenshot(
-    "nav-bar-tablet.png",
-  );
-
-  // Assert every glyph touches both lines (within 2 CSS pixels tolerance)
-  const tolerance = 2;
-  for (let i = 0; i < count; i++) {
-    const name = await icons.nth(i).getAttribute("class");
-    expect(absoluteTops[i], `${name} top should touch top line`).toBeLessThanOrEqual(topLine + tolerance);
-    expect(absoluteBottoms[i], `${name} bottom should touch bottom line`).toBeGreaterThanOrEqual(bottomLine - tolerance);
+test("parent navigation has labeled, separate touch targets", async ({ page }) => {
+  await openMenu(page);
+  const targets = await page.locator('.expansion-container .infobox-trigger').evaluateAll(elements => elements.map(el => {
+    const { left, right, height } = el.getBoundingClientRect();
+    return { left, right, height, label: el.textContent?.trim() };
+  }));
+  for (let i = 0; i < targets.length; i++) {
+    expect(targets[i].height).toBeGreaterThanOrEqual(44);
+    expect(targets[i].label).toBeTruthy();
+    if (i > 0) expect(targets[i].left).toBeGreaterThanOrEqual(targets[i - 1].right);
   }
 });
 
@@ -190,9 +107,6 @@ test("tablet layout at high level - no menu overlap", async ({ page }) => {
     (window as any).__bsharp_test_deterministic_color = "red";
   }, seedStateAtLevel("skyblue"));
   await page.goto("/");
-  await page.locator("#onboarding-overlay").evaluate((el) => {
-    el.classList.remove("visible");
-  });
 
   await expect(page).toHaveScreenshot("tablet-high-level.png");
 });
@@ -208,9 +122,6 @@ test("mobile layout at high level", async ({ page }) => {
     (window as any).__bsharp_test_deterministic_color = "red";
   }, seedStateAtLevel("skyblue"));
   await page.goto("/");
-  await page.locator("#onboarding-overlay").evaluate((el) => {
-    el.classList.remove("visible");
-  });
 
   await expect(page).toHaveScreenshot("mobile-high-level.png");
 });
@@ -227,20 +138,18 @@ test("tablet layout at low level", async ({ page }) => {
     (window as any).__bsharp_test_deterministic_color = "red";
   }, seedStateAtLevel("blue"));
   await page.goto("/");
-  await page.locator("#onboarding-overlay").evaluate((el) => {
-    el.classList.remove("visible");
-  });
 
   await expect(page).toHaveScreenshot("tablet-low-level.png");
 });
 
 test("stats bar after correct guess", async ({ page }) => {
   await page.locator("#play-button").click();
-  await page.waitForTimeout(1000);
+  await expect(page.locator("body")).toHaveAttribute("data-stage", "choose");
 
   await page.locator("#red-flag .flag").click();
   await expect(page.locator("#red-flag .flag")).toHaveClass(/flag-correct/);
 
+  await openMenu(page);
   await expect(page.locator("#stats-container")).toHaveScreenshot(
     "stats-correct.png",
   );
@@ -248,12 +157,27 @@ test("stats bar after correct guess", async ({ page }) => {
 
 test("stats bar after incorrect guess", async ({ page }) => {
   await page.locator("#play-button").click();
-  await page.waitForTimeout(1000);
+  await expect(page.locator("body")).toHaveAttribute("data-stage", "choose");
 
   await page.locator("#yellow-flag .flag").click();
   await expect(page.locator("#yellow-flag .flag")).toHaveClass(/flag-incorrect/);
 
+  await openMenu(page);
   await expect(page.locator("#stats-container")).toHaveScreenshot(
     "stats-incorrect.png",
   );
+});
+
+test('all fourteen colors retain usable touch targets', async ({ page }) => {
+  await choosePracticeSetting(page, 'chord-selector', 'skyblue');
+  const sizes = await page.locator('#flag-holder .flag-wrapper.visible').evaluateAll(pads => pads.map(pad => {
+    const { width, height } = pad.getBoundingClientRect();
+    return { width, height };
+  }));
+  expect(sizes).toHaveLength(14);
+  for (const size of sizes) {
+    expect(size.width).toBeGreaterThanOrEqual(44);
+    expect(size.height).toBeGreaterThanOrEqual(44);
+  }
+  await expect(page.locator('#flag-holder')).toHaveScreenshot('flags-all-colors.png');
 });

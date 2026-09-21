@@ -1,6 +1,6 @@
 # BSharp: Perfect Pitch Trainer
 
-Young children can acquire absolute (perfect) pitch — but adults cannot. The window closes around age 6. BSharp helps develop this ability using Eguchi's chord identification method.
+BSharp is a chord-to-color listening game inspired by Eguchi’s chord identification method. It is designed for short, adult-supported practice with young children. It is a practice aid, not a guarantee or assessment of absolute pitch.
 
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.bsharp.app">
@@ -13,6 +13,30 @@ Young children can acquire absolute (perfect) pitch — but adults cannot. The w
     <strong>See it on the Play Store</strong>
   </a>
 </p>
+
+## Child-friendly play
+
+<img src="dev/screenshots/child-ready.png" alt="Child view with a speaker button and large color pads" width="260"> <img src="dev/screenshots/child-correction.png" alt="Correction gently highlights the matching color for replay" width="260">
+
+The child view works through pictures and large touch targets: tap the speaker,
+choose a color, then tap the arrow. Short labels are supplementary; reading is
+not required to operate the controls after an adult introduces them.
+
+- **Try the sounds** lets a child tap colors and hear their chords without scoring.
+- After a mistake, tap the highlighted matching color to replay the chord. The
+  first answer is recorded once; the correction does not inflate accuracy.
+- Five stepping stones show session progress regardless of accuracy. Practice
+  stops at the parent's target and offers a quiet break, not endless questions.
+- Hold **Grown-ups** for a moment to open profiles, instruments, levels, history,
+  and a new-session button. Keyboard users can hold Space or Enter. This prevents
+  accidental taps; it is not a security lock. iOS Guided Access can keep the app
+  on screen.
+- Use **First sound: Red** when introducing the task. Level changes remain an
+  adult decision. Piano is the research-aligned starting point; the guitar
+  variants are additional practice options.
+
+The app retains current profiles and history. Existing sessions at their target
+open on the finished screen; start a new practice from the parent area.
 
 ## How it Works
 

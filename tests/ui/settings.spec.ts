@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { openMenu, openProfilePanel, createProfile } from "./helpers";
+import { openMenu, openProfilePanel, createProfile, choosePracticeSetting } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
@@ -25,7 +25,7 @@ test("non-default settings saved to new profile", async ({ page }) => {
   // Re-open the profile panel and check the checkbox is still unchecked
   const menu = page.locator("#menu-container");
   if (!(await menu.evaluate((el) => el.classList.contains("visible")))) {
-    await page.locator("#hamburger-link").click();
+    await openMenu(page);
     await expect(menu).toHaveClass(/visible/);
   }
   await page.locator("#profile-infobox-trigger").click();
@@ -85,7 +85,7 @@ test("switching profiles applies that profile chord level", async ({
   await page.locator("#add-user-button").click();
 
   // Change chord level to blue for the new profile
-  await page.locator("#chord-selector").selectOption("blue");
+  await choosePracticeSetting(page, "chord-selector", "blue");
 
   // Switch back to Guest (Guest uses fa-user icon)
   await openProfilePanel(page);
@@ -115,7 +115,7 @@ test("switching profiles applies that profile instrument", async ({ page }) => {
     .check();
   await page.locator("#add-user-button").click();
 
-  await page.locator("#instrument-selector").selectOption("guitar");
+  await choosePracticeSetting(page, "instrument-selector", "guitar");
 
   await openProfilePanel(page);
   await page

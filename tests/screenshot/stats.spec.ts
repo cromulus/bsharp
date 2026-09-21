@@ -84,6 +84,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("stats done state layout", async ({ page }) => {
+  await openMenu(page);
   await expect(page.locator("#stats-container")).toHaveClass(/done/);
   await expect(page.locator("#stats-container")).toHaveScreenshot(
     "stats-done.png",
